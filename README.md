@@ -26,3 +26,8 @@ npm start
 
 After this command, access `http://localhost:3333/` and insert the FastMile 4G IP address in the popup. Data won't be readily available, just wait a bit.
 
+## Development environment
+
+Tested and developed with NodeJS version `18.12.1`, npm version `9.2.0`.
+
+The router is a Nokia FastMile 4G model `4G05A`.
