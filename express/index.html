@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Nokia FastMile 4G Data</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container-fluid">
+
+    <nav class="navbar bg-body-tertiary">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Nokia FastMile 4G Data</span>
+        <span class="navbar-text" id="span-fastmile-ip"></span>
+      </div>
+    </nav>
+
+    <div id="signal-now" class="m-2">
+      <div class="row">
+        <h4 class="col">Last data</h4>
+        <div class="navbar-text form-check form-switch form-check-reverse col mx-3">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckReverse" onchange="autoUpdate(event)">
+          <label class="form-check-label" for="flexSwitchCheckReverse">Update every 5 min</label>
+        </div>
+      </div>
+      
+      <div id="stats-latest" class="row m-3"></div>
+    </div>
+
+    <div id="signal-history" class="m-2">
+      <h4>Signal history</h4>
+    </div>
+
+    <div id="changes-history" class="m-2">
+      <h4>Band changes</h4>
+    </div>
+
+    <div class="modal fade" id="ip-modal" tabindex="-1" aria-labelledby="ip-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="ip-modal-label">Insert FastMile IP</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">FastMile IP</span>
+              <input type="text" name="fastmile-ip" class="form-control" placeholder="192.168.X.X" aria-label="IP" aria-describedby="basic-addon1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="insertIP()">Save IP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <script type="text/javascript">
+    
+    var autoUpdateInterval;
+
+    function insertIP() {
+      fetch("/ip", { method: 'POST', body: JSON.stringify({ ip: $("input[name=fastmile-ip]").val() }), headers: { 'Content-Type': 'application/json' }, })
+      .then((response) => response.json())
+      .then((response) => {
+        $("#ip-modal").modal('hide');
+        location.reload();
+      });
+    }
+
+    function getInfoNow() {
+      fetch("/now")
+      .then((response) => response.json())
+      .then((response) => {
+        console.log(response);
+      })
+    }
+
+    function getIp(callback) {
+      fetch("/ip")
+      .then((response) => response.json())
+      .then((response) => {
+        callback(response.ip);
+      })
+    }
+
+    function getLatestInfos(callback) {
+      fetch("/history")
+      .then((response) => response.json())
+      .then((response) => {
+        callback(response.signals);
+      })
+    }
+
+    function getChanges(callback) {
+      fetch("/changes")
+      .then((response) => response.json())
+      .then((response) => {
+        callback(response.changes);
+      })
+    }
+
+    function getColorRSRP(value) {
+      if (value > -90) {
+        return "green";
+      } else if (value > -105) {
+        return "yellow";
+      } else if (value > -120) {
+        return "orange";
+      } else {
+        return "red";
+      }
+    }
+
+    function getColorRSRQ(value) {
+      if (value > -9) {
+        return "green";
+      } else if (value > -12) {
+        return "orange";
+      } else {
+        return "red";
+      }
+    }
+
+    function getColorRSSI(value) {
+      if (value > -70) {
+        return "green";
+      } else if (value > -85) {
+        return "yellow";
+      } else if (value > -100) {
+        return "orange";
+      } else {
+        return "red";
+      }
+    }
+
+    function getColorSINR(value) {
+      if (value > 10) {
+        return "green";
+      } else if (value > 6) {
+        return "yellow";
+      } else if (value > 0) {
+        return "orange";
+      } else {
+        return "red";
+      }
+    }
+
+    function loadData() {
+      getIp((ip) => {
+        if (ip == "") {
+          $("#ip-modal").modal('show');
+        } else {
+          $("#span-fastmile-ip").text(ip);
+        }
+      });
+
+      getChanges((changes) => {
+        for (var i = 0; i < changes.length; i++) {
+          if (typeof changes[i].primary === 'undefined')
+            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time)}</p><p class="col m-2"><b>${changes[i].secondary} (aggregated)</b></p></div>`);
+          else
+            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time)}</p><p class="col m-2"><b>${changes[i].primary} (primary)</b></p></div>`);
+        }
+      });
+
+      getLatestInfos((signals) => {
+
+        var signalNow = signals[0];
+        
+        $("#stats-latest").append(`<div class="col card m-2 text-bg-secondary"><div class="card-body">
+          <h5 class="card-title">Primary ${signalNow.primary.band}</h5>
+          <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.primary.rsrp)}">${signalNow.primary.rsrp}</b> dBm</p>
+          <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.primary.rsrq)}">${signalNow.primary.rsrq}</b> dB</p>
+          <p class="card-text"><b>rssi <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSSI(signalNow.primary.rssi)}">${signalNow.primary.rssi}</b> dBm</p>
+          <p class="card-text"><b>sinr <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorSINR(signalNow.primary.sinr)}">${signalNow.primary.sinr}</b></p>
+          </div></div>`);
+        for (var i = 0; i < signalNow.secondary.length; i++) {
+          $("#stats-latest").append(`<div class="col card m-2 text-bg-secondary"><div class="card-body">
+          <h5 class="card-title">Aggregated ${signalNow.secondary[i].band}</h5>
+          <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.secondary[i].rsrp)}">${signalNow.secondary[i].rsrp}</b> dBm</p>
+          <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.secondary[i].rsrq)}">${signalNow.secondary[i].rsrq}</b> dB</p>
+          <p class="card-text"><b>rssi <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSSI(signalNow.secondary[i].rssi)}">${signalNow.secondary[i].rssi}</b> dBm</p>
+          <p class="card-text"><b>sinr <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorSINR(signalNow.secondary[i].sinr)}">${signalNow.secondary[i].sinr}</b></p>
+          </div></div>`);
+        }
+        // $("#stats-latest").append(`<div class="row">${signalNow.primary.band}</div>`);
+
+        var bands = [];
+        // Scroll all objs to find bands number
+        for (var i = 0; i < signals.length; i++) {
+          if (!bands.includes(signals[i].primary.band))
+            bands.push(signals[i].primary.band);
+          for (var j = 0; j < signals[i].secondary.length; j++) {
+            if (!bands.includes(signals[i].secondary[j].band))
+              bands.push(signals[i].secondary[j].band);
+          }
+        }
+        
+
+        for (var i = 0; i < bands.length; i++) {
+          
+          $("#signal-history").append(`<div id="charts-b${bands[i]}" class="row mt-2"></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rsrp"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rsrq"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rssi"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-sinr"></canvas></div>`);
+          
+          var xValues = [];
+          var yValues = [];
+          var barColors = [];
+
+          for (var k = 0; k < signals.length; k++) {
+            if (signals[k].primary.band == bands[i]) {
+              yValues.push(signals[k].primary.rsrp);
+              xValues.push(k);
+              barColors.push(getColorRSRP(signals[k].primary.rsrp));
+            } else {
+              for (var j = 0; j < signals[k].secondary.length; j++) {
+                if (signals[k].secondary[j].band == bands[i]){
+                  yValues.push(signals[k].secondary[j].rsrp);
+                  xValues.push(k);
+                  barColors.push(getColorRSRP(signals[k].secondary[j].rsrp));
+                }
+              }
+            }
+          }
+
+
+          new Chart($('#chart-b' + bands[i] + '-rsrp'), {
+            type: "bar",
+            data: {
+              labels: xValues,
+              datasets: [{
+                label: "dBm",
+                backgroundColor: barColors,
+                data: yValues
+              }]
+            },
+            options: {
+              responsive: true,
+              title: {
+                display: true,
+                text: "B" + bands[i] + " rsrp"
+              },
+              scales: {
+                yAxes: [{
+                  display: true,
+                  ticks: {
+                    beginAtZero: false,
+                    stepValue: 1,
+                    max: Math.min(...yValues) - 1,
+                    min: Math.max(...yValues) + 1
+                  }
+                }]
+              }
+            }
+          });
+
+          xValues = [];
+          yValues = [];
+          barColors = [];
+
+          for (var k = 0; k < signals.length; k++) {
+            if (signals[k].primary.band == bands[i]) {
+              yValues.push(parseInt(signals[k].primary.rsrq));
+              xValues.push(k);
+              barColors.push(getColorRSRQ(parseInt(signals[k].primary.rsrq)));
+            } else {
+              for (var j = 0; j < signals[k].secondary.length; j++) {
+                if (signals[k].secondary[j].band == bands[i]){
+                  yValues.push(parseInt(signals[k].secondary[j].rsrq));
+                  xValues.push(k);
+                  barColors.push(getColorRSRQ(parseInt(signals[k].secondary[j].rsrq)));
+                }
+              }
+            }
+          }
+
+          new Chart($('#chart-b' + bands[i] + '-rsrq'), {
+            type: "bar",
+            data: {
+              labels: xValues,
+              datasets: [{
+                label: "dB",
+                backgroundColor: barColors,
+                data: yValues
+              }]
+            },
+            options: {
+              responsive: true,
+              title: {
+                display: true,
+                text: "B" + bands[i] + " rsrq"
+              },
+              scales: {
+                yAxes: [{
+                  display: true,
+                  ticks: {
+                    beginAtZero: false,
+                    stepValue: 1,
+                    max: Math.min(...yValues) - 1,
+                    min: Math.max(...yValues) + 1
+                  }
+                }]
+              }
+            }
+          });
+          
+          xValues = [];
+          yValues = [];
+          barColors = [];
+
+          for (var k = 0; k < signals.length; k++) {
+            if (signals[k].primary.band == bands[i]) {
+              yValues.push(parseInt(signals[k].primary.rssi));
+              xValues.push(k);
+              barColors.push(getColorRSSI(parseInt(signals[k].primary.rssi)));
+            } else {
+              for (var j = 0; j < signals[k].secondary.length; j++) {
+                if (signals[k].secondary[j].band == bands[i]){
+                  yValues.push(parseInt(signals[k].secondary[j].rssi));
+                  xValues.push(k);
+                  barColors.push(getColorRSSI(parseInt(signals[k].secondary[j].rssi)));
+                }
+              }
+            }
+          }
+
+          new Chart($('#chart-b' + bands[i] + '-rssi'), {
+            type: "bar",
+            data: {
+              labels: xValues,
+              datasets: [{
+                label: "dBm",
+                backgroundColor: barColors,
+                data: yValues
+              }]
+            },
+            options: {
+              responsive: true,
+              title: {
+                display: true,
+                text: "B" + bands[i] + " rssi"
+              },
+              scales: {
+                yAxes: [{
+                  display: true,
+                  ticks: {
+                    beginAtZero: false,
+                    stepValue: 1,
+                    max: Math.min(...yValues) - 1,
+                    min: Math.max(...yValues) + 1
+                  }
+                }]
+              }
+            }
+          });
+
+          xValues = [];
+          yValues = [];
+          barColors = [];
+
+          for (var k = 0; k < signals.length; k++) {
+            if (signals[k].primary.band == bands[i]) {
+              yValues.push(parseInt(signals[k].primary.sinr));
+              xValues.push(k);
+              barColors.push(getColorRSRQ(parseInt(signals[k].primary.sinr)));
+            } else {
+              for (var j = 0; j < signals[k].secondary.length; j++) {
+                if (signals[k].secondary[j].band == bands[i]){
+                  yValues.push(parseInt(signals[k].secondary[j].sinr));
+                  xValues.push(k);
+                  barColors.push(getColorRSRQ(parseInt(signals[k].secondary[j].sinr)));
+                }
+              }
+            }
+          }
+
+          new Chart($('#chart-b' + bands[i] + '-sinr'), {
+            type: "bar",
+            data: {
+              labels: xValues,
+              datasets: [{
+                label: "",
+                backgroundColor: barColors,
+                data: yValues
+              }]
+            },
+            options: {
+              responsive: true,
+              title: {
+                display: true,
+                text: "B" + bands[i] + " sinr"
+              },
+              scales: {
+                yAxes: [{
+                  display: true,
+                  ticks: {
+                    beginAtZero: false,
+                    stepValue: 1,
+                    max: Math.min(...yValues) - 1,
+                    min: Math.max(...yValues) + 1
+                  }
+                }]
+              }
+            }
+          });
+
+        }
+        
+      });
+    }
+
+    function autoUpdate(event) {
+      if (event.currentTarget.checked) {
+        autoUpdateInterval = setInterval(() => {
+          $("#stats-latest").html("");
+          $("#signal-history").html("<h4>Signal history</h4>");
+          $("#signal-history").html("<h4>Band changes</h4>");
+          loadData();
+        }, 300000);
+      } else {
+        clearInterval(autoUpdateInterval);
+      }
+    }
+
+    $(document).ready(function () {
+      loadData();
+    });
+  </script>
+
+</body>
+</html>
