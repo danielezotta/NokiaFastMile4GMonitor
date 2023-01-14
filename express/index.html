@@ -240,10 +240,10 @@
         for (var i = 0; i < bands.length; i++) {
           
           $("#signal-history").append(`<div id="charts-b${bands[i]}" class="row mt-2"></div>`);
-          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rsrp"></canvas></div>`);
-          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rsrq"></canvas></div>`);
-          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-rssi"></canvas></div>`);
-          $("#charts-b" + bands[i]).append(`<div class="col-3"><canvas id="chart-b${bands[i]}-sinr"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-md-3"><canvas id="chart-b${bands[i]}-rsrp"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-md-3"><canvas id="chart-b${bands[i]}-rsrq"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-md-3"><canvas id="chart-b${bands[i]}-rssi"></canvas></div>`);
+          $("#charts-b" + bands[i]).append(`<div class="col-md-3"><canvas id="chart-b${bands[i]}-sinr"></canvas></div>`);
           
           var xValues = [];
           var yValues = [];
