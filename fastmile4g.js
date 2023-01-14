@@ -72,12 +72,12 @@ function getPrimaryData(html) {
   var primaryCellData = root.querySelector('#attached-cell-val').getElementsByTagName("span");
 
   // PCI  eARFCN  CellType  RSRP  RSRQ  RSSI  CINR
-  var primarySignal = root.querySelector('.card-sevencol-grid').querySelectorAll('.name-of-value-in-card-bold');
+  var primarySignal = root.querySelectorAll('.card-sevencol-grid')[0].querySelectorAll('.name-of-value-in-card-bold');
   return { 
     "enbid" : primaryCellData[0].innerText, 
     "cell-id" : primaryCellData[1].innerText, 
     "band" : primaryCellData[2].innerText,
-    "pci" : primarySignal[0].innerText, 
+    "pci" : primarySignal[0].innerText,
     "earfcn" : primarySignal[1].innerText,
     "rsrp" : primarySignal[3].innerText,
     "rsrq" : primarySignal[4].innerText,

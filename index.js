@@ -29,6 +29,11 @@ app.get("/ip", (req, res) => {
   res.json({ "ip": db.get("ip") });
 })
 
+app.post("/history/delay", (req, res) => {
+  db.set("millis", req.body.delay).write();
+  res.json({ "delay": req.body.delay });
+})
+
 app.get("/history", (req, res) => {
   res.json({ "signals": db.get("signals").orderBy("time", "desc").slice(0, 15) });
 })

@@ -17,12 +17,15 @@
       </div>
     </nav>
 
-    <div id="signal-now" class="m-2">
-      <div class="row">
-        <h4 class="col">Last data</h4>
-        <div class="navbar-text form-check form-switch form-check-reverse col mx-3">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckReverse" onchange="autoUpdate(event)">
-          <label class="form-check-label" for="flexSwitchCheckReverse">Update every 5 min</label>
+    <div id="signal-now" class="">
+      <div class="row p-3">
+        <h4 class="col-md-8">Last data</h4>
+        <button class="btn btn-secondary col-md-2" onclick="$('#delay-modal').modal('show')">Signal update delay</button>
+        <div class="col-md-2 px-3">
+          <div class="navbar-text form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="flexSwitchCheckReverse" onchange="autoUpdate(event)">
+            <label class="form-check-label" for="flexSwitchCheckReverse">Update every 5 min</label>
+          </div>
         </div>
       </div>
       
@@ -57,6 +60,26 @@
       </div>
     </div>
 
+    <div class="modal fade" id="delay-modal" tabindex="-1" aria-labelledby="delay-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="delay-modal-label">Update interval</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">Seconds</span>
+              <input type="text" name="fastmile-delay" class="form-control" placeholder="120" aria-label="IP" aria-describedby="basic-addon1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="updateDelay()">Save delay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
@@ -66,6 +89,14 @@
   <script type="text/javascript">
     
     var autoUpdateInterval;
+
+    function updateDelay() {
+      fetch("/history/delay", { method: 'POST', body: JSON.stringify({ delay: ($("input[name=fastmile-delay]").val() * 1000) }), headers: { 'Content-Type': 'application/json' }, })
+      .then((response) => response.json())
+      .then((response) => {
+        $("#delay-modal").modal('hide');
+      });
+    }
 
     function insertIP() {
       fetch("/ip", { method: 'POST', body: JSON.stringify({ ip: $("input[name=fastmile-ip]").val() }), headers: { 'Content-Type': 'application/json' }, })
@@ -176,7 +207,7 @@
 
         var signalNow = signals[0];
         
-        $("#stats-latest").append(`<div class="col card m-2 text-bg-secondary"><div class="card-body">
+        $("#stats-latest").append(`<div class="col-md card m-2 text-bg-secondary"><div class="card-body">
           <h5 class="card-title">Primary ${signalNow.primary.band}</h5>
           <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.primary.rsrp)}">${signalNow.primary.rsrp}</b> dBm</p>
           <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.primary.rsrq)}">${signalNow.primary.rsrq}</b> dB</p>
@@ -184,7 +215,7 @@
           <p class="card-text"><b>sinr <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorSINR(signalNow.primary.sinr)}">${signalNow.primary.sinr}</b></p>
           </div></div>`);
         for (var i = 0; i < signalNow.secondary.length; i++) {
-          $("#stats-latest").append(`<div class="col card m-2 text-bg-secondary"><div class="card-body">
+          $("#stats-latest").append(`<div class="col-md card m-2 text-bg-secondary"><div class="card-body">
           <h5 class="card-title">Aggregated ${signalNow.secondary[i].band}</h5>
           <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.secondary[i].rsrp)}">${signalNow.secondary[i].rsrp}</b> dBm</p>
           <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.secondary[i].rsrq)}">${signalNow.secondary[i].rsrq}</b> dB</p>
