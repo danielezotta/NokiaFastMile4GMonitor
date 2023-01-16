@@ -21,12 +21,20 @@ function saveData(ip, db) {
         var secondaryData = getSecondaryData(data);
         
         prevRecording = db.get("signals").orderBy("time", "desc").value()[0];
-        if (typeof prevRecording !== 'undefined') {
-          if (prevRecording.primary.band != primaryData.band) {
+        if (typeof prevRecording !== 'undefined' && Object.keys(prevRecording.primary).length !== 0) {
+          if (Object.keys(primaryData).length !== 0 && prevRecording.primary.band != primaryData.band) {
             db.get("changes").push({ "time": Date.now(), "primary" : prevRecording.primary.band + " -> " + primaryData.band }).write();
+          } else if (Object.keys(primaryData).length === 0) {
+            db.get("changes").push({ "time": Date.now(), "primary" : prevRecording.primary.band + " -> " + "No data" }).write();
           }
-          if (prevRecording.secondary.length != secondaryData.length) {
+          if (secondaryData.length !== 0 && prevRecording.secondary.length != secondaryData.length) {
             db.get("changes").push({ "time": Date.now(), "secondary" : prevRecording.secondary.map(s => s.band) + " -> " + secondaryData.map(s => s.band) }).write();
+          } else if (secondaryData.length === 0) {
+            db.get("changes").push({ "time": Date.now(), "secondary" : prevRecording.secondary.map(s => s.band) + " -> " + "No aggregation" }).write();
+          }
+        } else if (typeof prevRecording !== 'undefined' && Object.keys(prevRecording.primary).length === 0) {
+          if (Object.keys(primaryData).length !== 0) {
+            db.get("changes").push({ "time": Date.now(), "primary" : "No data" + " -> " + primaryData.band }).write();
           }
         }
 
@@ -73,17 +81,21 @@ function getPrimaryData(html) {
 
   // PCI  eARFCN  CellType  RSRP  RSRQ  RSSI  CINR
   var primarySignal = root.querySelectorAll('.card-sevencol-grid')[0].querySelectorAll('.name-of-value-in-card-bold');
-  return { 
-    "enbid" : primaryCellData[0].innerText, 
-    "cell-id" : primaryCellData[1].innerText, 
-    "band" : primaryCellData[2].innerText,
-    "pci" : primarySignal[0].innerText,
-    "earfcn" : primarySignal[1].innerText,
-    "rsrp" : primarySignal[3].innerText,
-    "rsrq" : primarySignal[4].innerText,
-    "rssi" : primarySignal[5].innerText,
-    "sinr" : primarySignal[6].innerText,
-  };
+  if (typeof primarySignal !== 'undefined') {
+    return { 
+      "enbid" : primaryCellData[0].innerText, 
+      "cell-id" : primaryCellData[1].innerText, 
+      "band" : primaryCellData[2].innerText,
+      "pci" : primarySignal[0].innerText,
+      "earfcn" : primarySignal[1].innerText,
+      "rsrp" : primarySignal[3].innerText,
+      "rsrq" : primarySignal[4].innerText,
+      "rssi" : primarySignal[5].innerText,
+      "sinr" : primarySignal[6].innerText,
+    };
+  } else {
+    return {};
+  }
 }
 
 exports.now = (ip, response) => {

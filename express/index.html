@@ -206,7 +206,7 @@
       getLatestInfos((signals) => {
 
         var signalNow = signals[0];
-        
+
         $("#stats-latest").append(`<div class="col-md card m-2 text-bg-secondary"><div class="card-body">
           <h5 class="card-title">Primary ${signalNow.primary.band}</h5>
           <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.primary.rsrp)}">${signalNow.primary.rsrp}</b> dBm</p>
@@ -223,19 +223,19 @@
           <p class="card-text"><b>sinr <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorSINR(signalNow.secondary[i].sinr)}">${signalNow.secondary[i].sinr}</b></p>
           </div></div>`);
         }
-        // $("#stats-latest").append(`<div class="row">${signalNow.primary.band}</div>`);
 
         var bands = [];
         // Scroll all objs to find bands number
         for (var i = 0; i < signals.length; i++) {
-          if (!bands.includes(signals[i].primary.band))
-            bands.push(signals[i].primary.band);
-          for (var j = 0; j < signals[i].secondary.length; j++) {
-            if (!bands.includes(signals[i].secondary[j].band))
-              bands.push(signals[i].secondary[j].band);
+          if (typeof signals[i].primary.band !== 'undefined') {
+            if (!bands.includes(signals[i].primary.band))
+              bands.push(signals[i].primary.band);
+            for (var j = 0; j < signals[i].secondary.length; j++) {
+              if (!bands.includes(signals[i].secondary[j].band))
+                bands.push(signals[i].secondary[j].band);
+            }
           }
         }
-        
 
         for (var i = 0; i < bands.length; i++) {
           
