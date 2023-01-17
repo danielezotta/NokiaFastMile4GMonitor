@@ -56,23 +56,28 @@ function getSecondaryData(html) {
   var root = HTMLParser.parse(html);
   var secondaryCellBands = root.querySelector('#bandDL-val').rawText.split('+');
 
-  // PCI  eARFCN  CellType  RSRP  RSRQ  RSSI  CINR
-  var secondarySignal = root.querySelectorAll('.card-sevencol-grid')[1].querySelectorAll('.name-of-value-in-card-bold');
+  if (secondaryCellBands[0] != 'CA Not Available') {
+    // PCI  eARFCN  CellType  RSRP  RSRQ  RSSI  CINR
+    var secondarySignal = root.querySelectorAll('.card-sevencol-grid')[1].querySelectorAll('.name-of-value-in-card-bold');
 
-  var aggregatedInfos = [];
-  for (var i = 0; i < secondaryCellBands.length; i++) {
-    var obj = {};
-    obj["band"] = secondaryCellBands[i].replace('B', '');
-    obj["pci"] = secondarySignal[(7*i) + 0].innerText;
-    obj["earfcn"] = secondarySignal[(7*i) + 1].innerText;
-    obj["rsrp"] = secondarySignal[(7*i) + 3].innerText;
-    obj["rsrq"] = secondarySignal[(7*i) + 4].innerText;
-    obj["rssi"] = secondarySignal[(7*i) + 5].innerText;
-    obj["sinr"] = secondarySignal[(7*i) + 6].innerText;
-    aggregatedInfos.push(obj);
+    var aggregatedInfos = [];
+    for (var i = 0; i < secondaryCellBands.length; i++) {
+      var obj = {};
+      obj["band"] = secondaryCellBands[i].replace('B', '');
+      obj["pci"] = secondarySignal[(7*i) + 0].innerText;
+      obj["earfcn"] = secondarySignal[(7*i) + 1].innerText;
+      obj["rsrp"] = secondarySignal[(7*i) + 3].innerText;
+      obj["rsrq"] = secondarySignal[(7*i) + 4].innerText;
+      obj["rssi"] = secondarySignal[(7*i) + 5].innerText;
+      obj["sinr"] = secondarySignal[(7*i) + 6].innerText;
+      aggregatedInfos.push(obj);
+    }
+
+    return aggregatedInfos;
+  } else {
+    return [];
   }
 
-  return aggregatedInfos;
 }
 
 function getPrimaryData(html) {
