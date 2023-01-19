@@ -42,6 +42,9 @@ function saveData(ip, db) {
         if (db.get('signals').value().length > 30) {
           db.get('signals').remove({ "time": db.get('signals').value()[0].time }).write();
         }
+        if (db.get('changes').value().length > 30) {
+          db.get('changes').remove({ "time": db.get('changes').value()[0].time }).write();
+        }
       });
   
     }).on('error', function(err) {

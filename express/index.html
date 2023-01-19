@@ -197,9 +197,9 @@
       getChanges((changes) => {
         for (var i = 0; i < changes.length; i++) {
           if (typeof changes[i].primary === 'undefined')
-            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time)}</p><p class="col m-2"><b>${changes[i].secondary} (aggregated)</b></p></div>`);
+            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time).toLocaleString("en-US")}</p><p class="col m-2"><b>${changes[i].secondary} (aggregated)</b></p></div>`);
           else
-            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time)}</p><p class="col m-2"><b>${changes[i].primary} (primary)</b></p></div>`);
+            $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time).toLocaleString("en-US")}</p><p class="col m-2"><b>${changes[i].primary} (primary)</b></p></div>`);
         }
       });
 
@@ -456,7 +456,7 @@
         autoUpdateInterval = setInterval(() => {
           $("#stats-latest").html("");
           $("#signal-history").html("<h4>Signal history</h4>");
-          $("#signal-history").html("<h4>Band changes</h4>");
+          $("#changes-history").html("<h4>Band changes</h4>");
           loadData();
         }, 300000);
       } else {

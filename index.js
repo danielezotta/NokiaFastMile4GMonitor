@@ -39,7 +39,7 @@ app.get("/history", (req, res) => {
 })
 
 app.get("/changes", (req, res) => {
-  res.json({ "changes": db.get("changes").orderBy("time", "desc").slice(0, 10) });
+  res.json({ "changes": db.get("changes").orderBy("time", "desc") });
 })
 
 app.use('/', (req, res) => {
