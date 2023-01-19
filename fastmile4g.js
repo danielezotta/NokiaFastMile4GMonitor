@@ -29,7 +29,7 @@ function saveData(ip, db) {
           }
           if (secondaryData.length !== 0 && prevRecording.secondary.length != secondaryData.length) {
             db.get("changes").push({ "time": Date.now(), "secondary" : prevRecording.secondary.map(s => s.band) + " -> " + secondaryData.map(s => s.band) }).write();
-          } else if (secondaryData.length === 0) {
+          } else if (secondaryData.length === 0 && prevRecording.secondary.length != 0) {
             db.get("changes").push({ "time": Date.now(), "secondary" : prevRecording.secondary.map(s => s.band) + " -> " + "No aggregation" }).write();
           }
         } else if (typeof prevRecording !== 'undefined' && Object.keys(prevRecording.primary).length === 0) {
