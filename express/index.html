@@ -3,32 +3,42 @@
 <head>
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-  <title>Nokia FastMile 4G Data</title>
+  <title>FastMile 4G Data</title>
+  <link rel="icon" type="image/x-icon" href="https://upload.wikimedia.org/wikipedia/commons/0/02/Nokia_wordmark.svg">
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 <body>
   <div class="container-fluid">
-
-    <nav class="navbar bg-body-tertiary">
-      <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">Nokia FastMile 4G Data</span>
-        <span class="navbar-text" id="span-fastmile-ip"></span>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <a class="navbar-brand" href="#">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nokia_wordmark.svg" width="50" height="30" class="mx-3 d-inline-block align-top" alt="">
+        FastMile 4G Data
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse px-3" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item mx-3">
+            <a href="#" class="nav-link" onclick="$('#delay-modal').modal('show')"> &#9202; Signal update delay</a>
+          </li>
+          <li class="nav-item mx-3">
+            <a href="#" class="nav-link" onclick="$('#night-modal').modal('show')"> &#127761; Night signal update</a>
+          </li>
+          <li class="nav-item mx-3">
+            <div class="navbar-text form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="flexSwitchCheckReverse" onchange="autoUpdate(event)">
+              <label class="form-check-label" for="flexSwitchCheckReverse">Update every 5 min</label>
+            </div>
+          </li>
+        </ul>
       </div>
     </nav>
 
-    <div id="signal-now" class="">
-      <div class="row p-3">
-        <h4 class="col-md-8">Last data</h4>
-        <button class="btn btn-secondary col-md-2" onclick="$('#delay-modal').modal('show')">Signal update delay</button>
-        <div class="col-md-2 px-3">
-          <div class="navbar-text form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="flexSwitchCheckReverse" onchange="autoUpdate(event)">
-            <label class="form-check-label" for="flexSwitchCheckReverse">Update every 5 min</label>
-          </div>
-        </div>
-      </div>
-      
+    <div id="signal-now" class="m-2">
+      <h4>Last data</h4>      
       <div id="stats-latest" class="row m-3"></div>
     </div>
 
@@ -70,11 +80,39 @@
           <div class="modal-body">
             <div class="input-group mb-3">
               <span class="input-group-text" id="basic-addon1">Seconds</span>
-              <input type="text" name="fastmile-delay" class="form-control" placeholder="120" aria-label="IP" aria-describedby="basic-addon1">
+              <input type="text" name="fastmile-delay" class="form-control" placeholder="120" aria-label="Seconds" aria-describedby="basic-addon1">
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" onclick="updateDelay()">Save delay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="night-modal" tabindex="-1" aria-labelledby="night-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="night-modal-label">Night signal update</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">Start hour</span>
+              <input type="text" name="fastmile-night-start" class="form-control" placeholder="23" aria-label="Start" aria-describedby="basic-addon1">
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">End hour</span>
+              <input type="text" name="fastmile-night-end" class="form-control" placeholder="7" aria-label="End" aria-describedby="basic-addon1">
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">Seconds</span>
+              <input type="text" name="fastmile-night-delay" class="form-control" placeholder="600" aria-label="Seconds" aria-describedby="basic-addon1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="updateNight()">Save night</button>
           </div>
         </div>
       </div>
@@ -95,6 +133,14 @@
       .then((response) => response.json())
       .then((response) => {
         $("#delay-modal").modal('hide');
+      });
+    }
+
+    function updateNight() {
+      fetch("/history/night", { method: 'POST', body: JSON.stringify({ start: $("input[name=fastmile-night-start]").val(), end: $("input[name=fastmile-night-end]").val(), millis: ($("input[name=fastmile-night-delay]").val() * 1000) }), headers: { 'Content-Type': 'application/json' }, })
+      .then((response) => response.json())
+      .then((response) => {
+        $("#night-modal").modal('hide');
       });
     }
 
@@ -206,9 +252,12 @@
       getLatestInfos((signals) => {
 
         var signalNow = signals[0];
-
+        $("#stats-latest").append(`<div class="col-12 card m-2 text-bg-secondary"><div class="card-body">
+          <p class="card-text fs-4">Base Transceiver Station<span class="text-muted fs-6"> (eNBID)</span>: ${signalNow.primary.enbid}</p>
+          <p class="card-text fs-4">Cell Id: ${signalNow.primary["cell-id"]}</p>
+          </div></div>`);
         $("#stats-latest").append(`<div class="col-md card m-2 text-bg-secondary"><div class="card-body">
-          <h5 class="card-title">Primary ${signalNow.primary.band}</h5>
+          <p class="card-title fs-4">Primary ${signalNow.primary.band}<span class="text-muted fs-6"> (pci: ${signalNow.primary.pci}, earfcn: ${signalNow.primary.earfcn})</span></p>
           <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.primary.rsrp)}">${signalNow.primary.rsrp}</b> dBm</p>
           <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.primary.rsrq)}">${signalNow.primary.rsrq}</b> dB</p>
           <p class="card-text"><b>rssi <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSSI(signalNow.primary.rssi)}">${signalNow.primary.rssi}</b> dBm</p>
@@ -216,7 +265,7 @@
           </div></div>`);
         for (var i = 0; i < signalNow.secondary.length; i++) {
           $("#stats-latest").append(`<div class="col-md card m-2 text-bg-secondary"><div class="card-body">
-          <h5 class="card-title">Aggregated ${signalNow.secondary[i].band}</h5>
+          <p class="card-title fs-4">Aggregated ${signalNow.secondary[i].band}<span class="text-muted fs-6"> (pci: ${signalNow.secondary[i].pci}, earfcn: ${signalNow.secondary[i].earfcn})</span></p>
           <p class="card-text"><b>rsrp <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRP(signalNow.secondary[i].rsrp)}">${signalNow.secondary[i].rsrp}</b> dBm</p>
           <p class="card-text"><b>rsrq <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSRQ(signalNow.secondary[i].rsrq)}">${signalNow.secondary[i].rsrq}</b> dB</p>
           <p class="card-text"><b>rssi <span style="-webkit-text-stroke-width: 1px; -webkit-text-stroke-color: black; color: ${getColorRSSI(signalNow.secondary[i].rssi)}">${signalNow.secondary[i].rssi}</b> dBm</p>
