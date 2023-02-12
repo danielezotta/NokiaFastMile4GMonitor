@@ -37,7 +37,7 @@ process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
 app.get("/now", (req, res) => {
   fastmile.now(db.get("ip"), db, (signal) => {
-    response.send({ 
+    res.send({
       "primary" : signal.primary, 
       "secondary" : signal.secondary 
     });
@@ -88,5 +88,5 @@ app.use('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log("Listening on port " + PORT);
-  fastmile.timer(db.get("ip"), db);
+  fastmile.startTimer(db.get("ip"), db);
 });

@@ -5,7 +5,6 @@ const { DateTime } = require("luxon");
 var nightModeSwitchTimeout;
 const CA_NOT_AVAILABLE = 'CA Not Available';
 
-
 function getStatusPage(ip, callback) {
   https.get("https://" + ip + "/status.php", res => {
     var htmlPageChunks = [];
@@ -61,6 +60,7 @@ function addStatusToDatabase(db, htmlPage) {
 }
 
 function setStatusTimer(ip, db) {
+  console.log(db.get("night").value().enabled ? db.get("night").value().millis : db.get("millis").value());
   getStatusPage(ip, (htmlPage) => {
     addStatusToDatabase(db, htmlPage);
   });
@@ -163,13 +163,9 @@ function setNightModeTimer(db) {
 
 function setNightModeOnStartup(db) {
   if (isNightModeRange(db)) {
-    setNightModeSwitchTimeout(false, db.get("night").value().end, (enable) => {
-      setNightMode(enable, db);
-    });
+    setNightMode(true, db);
   } else {
-    setNightModeSwitchTimeout(true, db.get("night").value().start, (enable) => {
-      setNightMode(enable, db);
-    });
+    setNightMode(false, db);
   }
 }
 
@@ -180,13 +176,14 @@ exports.now = (ip, db, callback) => {
   });
 }
 
-exports.timer = (ip, db) => {
+exports.startTimer = (ip, db) => {
   setStatusTimer(ip, db);
   setNightModeOnStartup(db);
   setNightModeTimer(db);
 }
 
 exports.reloadNightModeTimer = (db) => {
-  clearTimeout(nightTimeout);
+  clearTimeout(nightModeSwitchTimeout);
+  setNightModeOnStartup(db);
   setNightModeTimer(db);
 }
