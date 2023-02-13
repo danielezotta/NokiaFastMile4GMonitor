@@ -60,7 +60,6 @@ function addStatusToDatabase(db, htmlPage) {
 }
 
 function setStatusTimer(ip, db) {
-  console.log(db.get("night").value().enabled ? db.get("night").value().millis : db.get("millis").value());
   getStatusPage(ip, (htmlPage) => {
     addStatusToDatabase(db, htmlPage);
   });
@@ -140,7 +139,7 @@ function setNightModeSwitchTimeout(enable, hour, callback) {
   var dateTimeNow = DateTime.now();
   var dateTimeSwitch = DateTime.local(dateTimeNow.year, dateTimeNow.month, dateTimeNow.day, hour);
   if (enable && dateTimeNow.hour > hour) {
-    dateTimeSwitch.plus({ hours: 24 });
+    dateTimeSwitch = dateTimeSwitch.plus({ hours: 24 });
   }
   nightModeSwitchTimeout = setTimeout(() => {
     callback(enable);
