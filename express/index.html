@@ -46,6 +46,11 @@
       <h4>Signal history</h4>
     </div>
 
+    <div id="speedtests-history" class="m-2">
+      <h4>Last speedtests</h4>
+      <div class="row"></div>
+    </div>
+
     <div id="changes-history" class="m-2">
       <h4>Band changes</h4>
     </div>
@@ -184,6 +189,14 @@
         callback(response.changes);
       })
     }
+    
+    function getSpeedtests(callback) {
+      fetch("/speedtests")
+      .then((response) => response.json())
+      .then((response) => {
+        callback(response.speedtests);
+      })
+    }
 
     function getColorRSRP(value) {
       if (value > -90) {
@@ -247,6 +260,30 @@
           else
             $("#changes-history").append(`<div class="row"><p class="col m-2">${new Date(changes[i].time).toLocaleString("en-US")}</p><p class="col m-2"><b>${changes[i].primary} (primary)</b></p></div>`);
         }
+      });
+      
+      getSpeedtests((speedtests) => {
+        speedtests.forEach(element => {
+          $("#speedtests-history .row:first").append(`<div class="col-4">
+                                          <div class="card text-bg-secondary m-2">
+                                            <div class="card-body">
+                                              <div class="row">
+                                                <div class="col-6 text-center">
+                                                  <p class="fs-1">🡓</p>
+                                                  <p class="card-text fs-4">${parseFloat(element.download.bandwidth * 8 / 1000000).toFixed(2)} Mbps</p>
+                                                </div>
+                                                <div class="col-6 text-center">
+                                                  <p class="fs-1">🡑</p>
+                                                  <p class="card-text fs-4">${parseFloat(element.upload.bandwidth * 8 / 1000000).toFixed(2)} Mbps</p>
+                                                </div>
+                                              </div>
+                                              <br>
+                                              <p class="card-text text-muted">Ping: ${element.ping.latency} ms</p>
+                                              <p class="card-text text-muted">Time: ${new Date(element.timestamp).toLocaleString("en-US")}</p>
+                                            </div>
+                                          </div>
+                                        </div>`);
+        });
       });
 
       getLatestInfos((signals) => {

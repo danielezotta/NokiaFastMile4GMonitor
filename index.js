@@ -12,6 +12,7 @@ const DEFAULT_NIGHT_MODE_END_HOUR = 7;
 const DEFAULT_NIGHT_MODE_ENABLED = false;
 const DEFAULT_CHANGES_GET_LIMIT = 30;
 const DEFAULT_HISTORY_GET_LIMIT = 15;
+const DEFAULT_SPEEDTEST_MILLIS_DELAY = 10800000;
 
 const adapter = new FileSync('db.json');
 const db = low(adapter);
@@ -26,7 +27,11 @@ db.defaults({
     start: DEFAULT_NIGHT_MODE_START_HOUR, 
     end: DEFAULT_NIGHT_MODE_END_HOUR, 
     millis: DEFAULT_NIGHT_MODE_MILLIS_DELAY 
-  } 
+  },
+  speedtest: {
+    millis: DEFAULT_SPEEDTEST_MILLIS_DELAY,
+    list: [],
+  }
 }).write();
 
 var app = express();
@@ -82,6 +87,11 @@ app.get("/changes", (req, res) => {
   res.json({ "changes": db.get("changes").orderBy("time", "desc").slice(0, limit) });
 });
 
+app.get("/speedtests", (req, res) => {
+  // var limit = (typeof req.body.limit === 'undefined' || req.body.limit == 0) ? DEFAULT_CHANGES_GET_LIMIT : parseInt(req.body.limit);
+  res.json({ "speedtests": db.get("speedtest").value().list.reverse().slice(0, 12) });
+});
+
 app.use('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/express/index.html'));
 });
@@ -89,4 +99,5 @@ app.use('/', (req, res) => {
 app.listen(PORT, () => {
   console.log("Listening on port " + PORT);
   fastmile.startTimer(db.get("ip"), db);
+  fastmile.startSpeedtestTimer(db);
 });

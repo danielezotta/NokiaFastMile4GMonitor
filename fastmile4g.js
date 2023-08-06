@@ -1,6 +1,7 @@
 const https = require("https");
 const HTMLParser = require('node-html-parser');
 const { DateTime } = require("luxon");
+const speedTest = require('speedtest-net');
 
 var nightModeSwitchTimeout;
 const CA_NOT_AVAILABLE = 'CA Not Available';
@@ -168,6 +169,30 @@ function setNightModeOnStartup(db) {
   }
 }
 
+function setSpeedtestTimer(db) {
+  (async () => {
+    try {
+      var speedtest = db.get("speedtest").value();
+      speedtest.list.push(
+        (await speedTest({
+          acceptLicense: true,
+          acceptGdpr: true,
+          serverId: "4302"
+        }))
+      );
+      if (speedtest.list.length > 16) {
+        speedtest.list.shift();
+      }
+      db.set("speedtest", speedtest).write();
+    } catch (err) {
+      console.log(err.message);
+    }
+  })();
+  setTimeout(() => {
+    setSpeedtestTimer(db);
+  }, db.get("speedtest").value().millis);
+}
+
 exports.now = (ip, db, callback) => {
   getStatusPage(ip, (htmlPage) => {
     addStatusToDatabase(db, htmlPage);
@@ -179,6 +204,10 @@ exports.startTimer = (ip, db) => {
   setStatusTimer(ip, db);
   setNightModeOnStartup(db);
   setNightModeTimer(db);
+}
+
+exports.startSpeedtestTimer = (db) => {
+  setSpeedtestTimer(db);
 }
 
 exports.reloadNightModeTimer = (db) => {
