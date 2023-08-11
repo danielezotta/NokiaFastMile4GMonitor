@@ -88,8 +88,7 @@ app.get("/changes", (req, res) => {
 });
 
 app.get("/speedtests", (req, res) => {
-  // var limit = (typeof req.body.limit === 'undefined' || req.body.limit == 0) ? DEFAULT_CHANGES_GET_LIMIT : parseInt(req.body.limit);
-  res.json({ "speedtests": db.get("speedtest").value().list.reverse().slice(0, 12) });
+  res.json({ "speedtests": db.get("speedtest").value().list.sort((a, b) => a.timestamp > b.timestamp ? -1 : 1).slice(0, 12) });
 });
 
 app.use('/', (req, res) => {

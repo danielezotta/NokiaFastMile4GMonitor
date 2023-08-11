@@ -194,6 +194,7 @@
       fetch("/speedtests")
       .then((response) => response.json())
       .then((response) => {
+        console.log(response);
         callback(response.speedtests);
       })
     }
@@ -264,7 +265,7 @@
       
       getSpeedtests((speedtests) => {
         speedtests.forEach(element => {
-          $("#speedtests-history .row:first").append(`<div class="col-4">
+          $("#speedtests-history .row:first").append(`<div class="col-md-4">
                                           <div class="card text-bg-secondary m-2">
                                             <div class="card-body">
                                               <div class="row">
